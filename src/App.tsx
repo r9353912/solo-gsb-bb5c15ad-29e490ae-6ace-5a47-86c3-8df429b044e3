@@ -43,6 +43,9 @@ export default function App() {
   const [schema, setSchema] = useState<CompiledSchema | null>(null);
   // 受保护路径规则同样在「返回调整 ↔ 输出」之间保留（确认状态在输出页内，重新生成即清空）
   const [protectedConfig, setProtectedConfig] = useState('');
+  // 引用完整性检查开关与规则配置也在「返回调整 ↔ 输出」之间保留，重新开始时清空
+  const [refCheckEnabled, setRefCheckEnabled] = useState(false);
+  const [refCheckConfig, setRefCheckConfig] = useState('');
 
   const handleMerge = (base: JsonValue, ours: JsonValue, theirs: JsonValue) => {
     setBaseDoc(base);
@@ -118,6 +121,8 @@ export default function App() {
     setSchema(null);
     setSchemaEnabled(false);
     setProtectedConfig('');
+    setRefCheckEnabled(false);
+    setRefCheckConfig('');
   };
 
   const canUndo = history.past.length > 0;
@@ -166,6 +171,10 @@ export default function App() {
             onSchemaChange={setSchema}
             protectedConfig={protectedConfig}
             onProtectedConfigChange={setProtectedConfig}
+            refCheckEnabled={refCheckEnabled}
+            refCheckConfig={refCheckConfig}
+            onRefCheckEnabledChange={setRefCheckEnabled}
+            onRefCheckConfigChange={setRefCheckConfig}
             onBack={() => setStage('merge')}
             onRestart={handleRestart}
           />

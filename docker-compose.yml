@@ -4,3 +4,9 @@ services:
     ports:
       - "8080:80"
     restart: unless-stopped
+    # 初始化完成后（nginx 可响应）即视为健康
+    healthcheck:
+      test: ["CMD", "wget", "-q", "-O", "/dev/null", "http://localhost/"]
+      interval: 30s
+      timeout: 3s
+      retries: 3

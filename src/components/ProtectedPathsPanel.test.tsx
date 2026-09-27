@@ -42,6 +42,10 @@ function stageProps() {
     schema: null,
     onSchemaEnabledChange: () => {},
     onSchemaChange: () => {},
+    refCheckEnabled: false,
+    refCheckConfig: '',
+    onRefCheckEnabledChange: () => {},
+    onRefCheckConfigChange: () => {},
     onBack: () => {},
     onRestart: () => {},
   };

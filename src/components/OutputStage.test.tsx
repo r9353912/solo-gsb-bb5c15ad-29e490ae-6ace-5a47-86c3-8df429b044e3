@@ -41,6 +41,10 @@ describe('OutputStage Schema 校验集成', () => {
     ...traceProps({ id: 0 } as unknown as JsonValue, { id: 1, tag: 'c' } as unknown as JsonValue),
     protectedConfig: '',
     onProtectedConfigChange: () => {},
+    refCheckEnabled: false,
+    refCheckConfig: '',
+    onRefCheckEnabledChange: () => {},
+    onRefCheckConfigChange: () => {},
     onBack: () => {},
     onRestart: () => {},
   };

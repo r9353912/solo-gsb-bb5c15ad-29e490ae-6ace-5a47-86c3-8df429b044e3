@@ -6,6 +6,7 @@ import { validateMerged } from '../merge/schema';
 import type { MergeResult, Resolutions } from '../merge/threeWayMerge';
 import { buildDecisionTrace } from '../merge/decisionTrace';
 import { computeProtectedHits, parseProtectedRules } from '../merge/protectedPaths';
+import { checkRefIntegrity, parseRefConfig, EMPTY_REF_RESULT } from '../merge/refIntegrity';
 import { buildPointerLines, resolveLine } from '../merge/jsonLineMap';
 import { downloadText } from '../download';
 import SchemaPanel from './SchemaPanel';
@@ -13,6 +14,7 @@ import ValidationIssues from './ValidationIssues';
 import PatchAuditPanel from './PatchAuditPanel';
 import DecisionTracePanel from './DecisionTracePanel';
 import ProtectedPathsPanel from './ProtectedPathsPanel';
+import RefIntegrityPanel from './RefIntegrityPanel';
 
 interface Props {
   base: JsonValue;
@@ -28,6 +30,11 @@ interface Props {
   /** 受保护路径规则配置（逐行一条模式；由 App 保存，返回调整重新生成后仍保留） */
   protectedConfig: string;
   onProtectedConfigChange: (text: string) => void;
+  /** 引用完整性检查开关与规则配置（JSON 文本；由 App 保存，返回调整保留、重新开始清空） */
+  refCheckEnabled: boolean;
+  refCheckConfig: string;
+  onRefCheckEnabledChange: (v: boolean) => void;
+  onRefCheckConfigChange: (text: string) => void;
   onBack: () => void;
   onRestart: () => void;
 }
@@ -82,6 +89,10 @@ export default function OutputStage({
   onSchemaChange,
   protectedConfig,
   onProtectedConfigChange,
+  refCheckEnabled,
+  refCheckConfig,
+  onRefCheckEnabledChange,
+  onRefCheckConfigChange,
   onBack,
   onRestart,
 }: Props) {
@@ -115,6 +126,32 @@ export default function OutputStage({
   );
   // 存在未确认的命中项时禁用 merged.json / patch.json 下载
   const protectedBlocked = protectedHits.some((h) => !confirmedProtected.has(h.entry.pointer));
+
+  // 引用完整性检查：以合并结果 + 已生效规则计算（规则修改或重新生成结果后自动重检）
+  const refApplied = useMemo(() => {
+    const { rules, errors } = parseRefConfig(refCheckConfig);
+    return { rules, errors, ruleCount: rules.length };
+  }, [refCheckConfig]);
+  const refResult = useMemo(
+    () =>
+      refCheckEnabled && refApplied.errors.length === 0
+        ? checkRefIntegrity(merged, refApplied.rules)
+        : EMPTY_REF_RESULT,
+    [refCheckEnabled, refApplied, merged],
+  );
+  // 启用且存在配置错误 / 规则错误 / 悬空引用时禁用 merged.json / patch.json 下载
+  const refBlocked =
+    refCheckEnabled &&
+    (refApplied.errors.length > 0 ||
+      refResult.errors.length > 0 ||
+      refResult.dangling.length > 0);
+
+  const downloadBlocked = protectedBlocked || refBlocked;
+  const downloadBlockTitle = protectedBlocked
+    ? '受保护路径命中项未全部确认，暂不可下载'
+    : refBlocked
+      ? '引用完整性检查存在错误，暂不可下载'
+      : undefined;
 
   // JSON Pointer → 渲染行号
   const pointerLines = useMemo(() => buildPointerLines(mergedText), [mergedText]);
@@ -172,6 +209,15 @@ export default function OutputStage({
         confirmed={confirmedProtected}
         onToggleConfirm={toggleProtectedConfirm}
       />
+      <RefIntegrityPanel
+        enabled={refCheckEnabled}
+        onEnabledChange={onRefCheckEnabledChange}
+        configText={refCheckConfig}
+        onConfigChange={onRefCheckConfigChange}
+        applied={refApplied}
+        result={refResult}
+        onLocate={handleLocate}
+      />
       <div className="output-grid">
         <div className="output-panel">
           <h3>合并结果 JSON</h3>
@@ -182,8 +228,8 @@ export default function OutputStage({
             </button>
             <button
               className="small"
-              disabled={protectedBlocked}
-              title={protectedBlocked ? '受保护路径命中项未全部确认，暂不可下载' : undefined}
+              disabled={downloadBlocked}
+              title={downloadBlockTitle}
               onClick={() => downloadText('merged.json', mergedText)}
             >
               下载 merged.json
@@ -194,6 +240,14 @@ export default function OutputStage({
                 title="在「受保护路径检查」中逐项确认全部命中变更后恢复下载"
               >
                 ⚠ 受保护命中未确认
+              </span>
+            )}
+            {refBlocked && (
+              <span
+                className="download-warn"
+                title="在「引用完整性检查」中修复规则错误或悬空引用后恢复下载"
+              >
+                ⚠ 引用完整性检查未通过
               </span>
             )}
             {showValidation && errorCount > 0 && (
@@ -215,8 +269,8 @@ export default function OutputStage({
             </button>
             <button
               className="small"
-              disabled={protectedBlocked}
-              title={protectedBlocked ? '受保护路径命中项未全部确认，暂不可下载' : undefined}
+              disabled={downloadBlocked}
+              title={downloadBlockTitle}
               onClick={() => downloadText('patch.json', patchText)}
             >
               下载 patch.json
@@ -227,6 +281,14 @@ export default function OutputStage({
                 title="在「受保护路径检查」中逐项确认全部命中变更后恢复下载"
               >
                 ⚠ 受保护命中未确认
+              </span>
+            )}
+            {refBlocked && (
+              <span
+                className="download-warn"
+                title="在「引用完整性检查」中修复规则错误或悬空引用后恢复下载"
+              >
+                ⚠ 引用完整性检查未通过
               </span>
             )}
           </div>
