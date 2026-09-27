@@ -42,6 +42,10 @@ function stageProps() {
     schema: null,
     onSchemaEnabledChange: () => {},
     onSchemaChange: () => {},
+    refEnabled: false,
+    onRefEnabledChange: () => {},
+    refRules: [],
+    onRefRulesChange: () => {},
     onBack: () => {},
     onRestart: () => {},
   };
@@ -170,6 +174,10 @@ describe('受保护路径检查（OutputStage 集成）', () => {
             {...stageProps()}
             protectedConfig="/svc/**"
             onProtectedConfigChange={() => {}}
+            refEnabled={false}
+            onRefEnabledChange={() => {}}
+            refRules={[]}
+            onRefRulesChange={() => {}}
           />,
         );
       });

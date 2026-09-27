@@ -1544,6 +1544,233 @@ button.cross-row.selected {
   padding: 0 6px;
 }
 
+/* ---------- 引用完整性检查 ---------- */
+.ri-panel {
+  background: var(--bg-panel);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 14px;
+  margin-bottom: 14px;
+}
+
+.ri-header {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-bottom: 10px;
+}
+
+.ri-toggle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.ri-toggle .hint {
+  color: var(--text-dim);
+  font-size: 12px;
+  font-weight: normal;
+}
+
+.ri-syntax-hint {
+  color: var(--text-dim);
+  font-size: 12px;
+  line-height: 1.6;
+  background: var(--bg-panel-2);
+  border-radius: 8px;
+  padding: 8px 12px;
+  margin-bottom: 10px;
+}
+
+.ri-syntax-hint code {
+  font-family: 'JetBrains Mono', Consolas, monospace;
+  color: var(--purple);
+}
+
+.ri-rule-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.ri-rule-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  position: relative;
+}
+
+.ri-rule-head {
+  font-size: 12px;
+  color: var(--text-dim);
+  padding: 0 2px;
+}
+
+.ri-rule-order {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  width: 64px;
+  flex-shrink: 0;
+}
+
+.ri-rule-order .order-no {
+  flex: 1;
+  text-align: center;
+  color: var(--text-dim);
+  font-size: 12px;
+}
+
+.ri-col-target,
+.ri-col-id,
+.ri-col-ref {
+  background: var(--bg-panel-2);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  color: var(--text);
+  padding: 6px 8px;
+  font-size: 13px;
+  font-family: 'JetBrains Mono', Consolas, monospace;
+}
+
+.ri-col-target {
+  flex: 1.2 1 160px;
+}
+
+.ri-col-id {
+  flex: 0.7 1 90px;
+}
+
+.ri-col-ref {
+  flex: 1.4 1 200px;
+}
+
+.ri-col-target:focus,
+.ri-col-id:focus,
+.ri-col-ref:focus {
+  outline: none;
+  border-color: var(--accent);
+}
+
+.ri-rule-row.invalid .ri-col-target,
+.ri-rule-row.invalid .ri-col-id,
+.ri-rule-row.invalid .ri-col-ref {
+  border-color: var(--red);
+}
+
+.ri-rule-remove {
+  flex-shrink: 0;
+}
+
+.ri-row-error {
+  flex-basis: 100%;
+  color: var(--red);
+  font-size: 12px;
+  padding-left: 72px;
+}
+
+.ri-panel .panel-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.ri-status {
+  font-size: 12px;
+}
+
+.ri-status.bad {
+  color: var(--red);
+}
+
+.ri-status.dirty {
+  color: var(--yellow);
+}
+
+.ri-summary {
+  border-radius: 8px;
+  padding: 8px 12px;
+  font-size: 13px;
+  margin-top: 12px;
+}
+
+.ri-summary.none {
+  color: var(--text-dim);
+  border: 1px dashed var(--border);
+}
+
+.ri-summary.ok {
+  background: rgba(52, 201, 142, 0.12);
+  border: 1px solid var(--green);
+  color: var(--green);
+}
+
+.ri-summary.bad {
+  background: rgba(232, 92, 92, 0.1);
+  border: 1px solid var(--red);
+  color: var(--text);
+}
+
+.ri-issues {
+  margin-top: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.ri-issue-title {
+  font-size: 13px;
+  font-weight: 600;
+  margin-bottom: 4px;
+}
+
+.ri-issue-group ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  max-height: 240px;
+  overflow: auto;
+}
+
+.ri-issue-item {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  flex-wrap: wrap;
+  background: var(--bg-panel-2);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 5px 10px;
+  font-size: 12.5px;
+}
+
+.ri-rule-tag {
+  flex-shrink: 0;
+  font-family: 'JetBrains Mono', Consolas, monospace;
+  color: var(--purple);
+  background: rgba(164, 120, 255, 0.12);
+  border-radius: 4px;
+  padding: 0 6px;
+}
+
+.ri-issue-path {
+  font-family: 'JetBrains Mono', Consolas, monospace;
+  color: var(--accent);
+  word-break: break-all;
+}
+
+.ri-issue-msg {
+  color: var(--text);
+}
+
 /* ---------- 输出阶段 ---------- */
 .schema-panel {
   background: var(--bg-panel);

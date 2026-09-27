@@ -177,6 +177,10 @@ describe('补丁审计与合并结果隔离（OutputStage 集成）', () => {
           onSchemaChange={() => {}}
           protectedConfig=""
           onProtectedConfigChange={() => {}}
+          refEnabled={false}
+          onRefEnabledChange={() => {}}
+          refRules={[]}
+          onRefRulesChange={() => {}}
           onBack={() => {}}
           onRestart={() => {}}
         />,

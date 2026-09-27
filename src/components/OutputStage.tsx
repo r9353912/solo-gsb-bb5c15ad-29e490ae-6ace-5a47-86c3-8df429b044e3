@@ -13,6 +13,13 @@ import ValidationIssues from './ValidationIssues';
 import PatchAuditPanel from './PatchAuditPanel';
 import DecisionTracePanel from './DecisionTracePanel';
 import ProtectedPathsPanel from './ProtectedPathsPanel';
+import ReferentialIntegrityPanel from './ReferentialIntegrityPanel';
+import {
+  checkReferentialIntegrity,
+  hasIntegrityErrors,
+  type IntegrityReport,
+  type RefRule,
+} from '../merge/referentialIntegrity';
 
 interface Props {
   base: JsonValue;
@@ -28,6 +35,11 @@ interface Props {
   /** 受保护路径规则配置（逐行一条模式；由 App 保存，返回调整重新生成后仍保留） */
   protectedConfig: string;
   onProtectedConfigChange: (text: string) => void;
+  /** 引用完整性检查开关与规则列表（由 App 保存：返回调整保留规则，重新开始清空） */
+  refEnabled: boolean;
+  onRefEnabledChange: (v: boolean) => void;
+  refRules: RefRule[];
+  onRefRulesChange: (rules: RefRule[]) => void;
   onBack: () => void;
   onRestart: () => void;
 }
@@ -82,6 +94,10 @@ export default function OutputStage({
   onSchemaChange,
   protectedConfig,
   onProtectedConfigChange,
+  refEnabled,
+  onRefEnabledChange,
+  refRules,
+  onRefRulesChange,
   onBack,
   onRestart,
 }: Props) {
@@ -115,6 +131,16 @@ export default function OutputStage({
   );
   // 存在未确认的命中项时禁用 merged.json / patch.json 下载
   const protectedBlocked = protectedHits.some((h) => !confirmedProtected.has(h.entry.pointer));
+
+  // 引用完整性检查：以合并结果为输入，按有效规则建立目标索引并校验引用
+  const integrityReport: IntegrityReport = useMemo(
+    () => (refEnabled ? checkReferentialIntegrity(merged, refRules) : { ruleIssues: [], dangling: [] }),
+    [refEnabled, refRules, merged],
+  );
+  const refBlocked = refEnabled && hasIntegrityErrors(integrityReport);
+
+  // 任一阻断条件成立（受保护命中未确认 / 引用完整性存在错误）时禁用下载
+  const downloadBlocked = protectedBlocked || refBlocked;
 
   // JSON Pointer → 渲染行号
   const pointerLines = useMemo(() => buildPointerLines(mergedText), [mergedText]);
@@ -172,6 +198,13 @@ export default function OutputStage({
         confirmed={confirmedProtected}
         onToggleConfirm={toggleProtectedConfirm}
       />
+      <ReferentialIntegrityPanel
+        enabled={refEnabled}
+        onEnabledChange={onRefEnabledChange}
+        rules={refRules}
+        onRulesChange={onRefRulesChange}
+        report={integrityReport}
+      />
       <div className="output-grid">
         <div className="output-panel">
           <h3>合并结果 JSON</h3>
@@ -182,8 +215,8 @@ export default function OutputStage({
             </button>
             <button
               className="small"
-              disabled={protectedBlocked}
-              title={protectedBlocked ? '受保护路径命中项未全部确认，暂不可下载' : undefined}
+              disabled={downloadBlocked}
+              title={protectedBlocked ? '受保护路径命中项未全部确认，暂不可下载' : refBlocked ? '引用完整性检查存在错误，暂不可下载' : undefined}
               onClick={() => downloadText('merged.json', mergedText)}
             >
               下载 merged.json
@@ -194,6 +227,14 @@ export default function OutputStage({
                 title="在「受保护路径检查」中逐项确认全部命中变更后恢复下载"
               >
                 ⚠ 受保护命中未确认
+              </span>
+            )}
+            {refBlocked && (
+              <span
+                className="download-warn"
+                title="在「引用完整性检查」中修正全部规则错误与悬空引用后恢复下载"
+              >
+                ⚠ 引用完整性检查未通过
               </span>
             )}
             {showValidation && errorCount > 0 && (
@@ -215,8 +256,8 @@ export default function OutputStage({
             </button>
             <button
               className="small"
-              disabled={protectedBlocked}
-              title={protectedBlocked ? '受保护路径命中项未全部确认，暂不可下载' : undefined}
+              disabled={downloadBlocked}
+              title={protectedBlocked ? '受保护路径命中项未全部确认，暂不可下载' : refBlocked ? '引用完整性检查存在错误，暂不可下载' : undefined}
               onClick={() => downloadText('patch.json', patchText)}
             >
               下载 patch.json
@@ -227,6 +268,14 @@ export default function OutputStage({
                 title="在「受保护路径检查」中逐项确认全部命中变更后恢复下载"
               >
                 ⚠ 受保护命中未确认
+              </span>
+            )}
+            {refBlocked && (
+              <span
+                className="download-warn"
+                title="在「引用完整性检查」中修正全部规则错误与悬空引用后恢复下载"
+              >
+                ⚠ 引用完整性检查未通过
               </span>
             )}
           </div>

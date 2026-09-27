@@ -24,6 +24,7 @@ import {
   type HistoryTransaction,
   type TransactionKind,
 } from './merge/history';
+import type { RefRule } from './merge/referentialIntegrity';
 
 type Stage = 'input' | 'merge' | 'output';
 
@@ -43,6 +44,9 @@ export default function App() {
   const [schema, setSchema] = useState<CompiledSchema | null>(null);
   // 受保护路径规则同样在「返回调整 ↔ 输出」之间保留（确认状态在输出页内，重新生成即清空）
   const [protectedConfig, setProtectedConfig] = useState('');
+  // 引用完整性检查开关与规则：返回调整保留，重新开始清空
+  const [refEnabled, setRefEnabled] = useState(false);
+  const [refRules, setRefRules] = useState<RefRule[]>([]);
 
   const handleMerge = (base: JsonValue, ours: JsonValue, theirs: JsonValue) => {
     setBaseDoc(base);
@@ -118,6 +122,8 @@ export default function App() {
     setSchema(null);
     setSchemaEnabled(false);
     setProtectedConfig('');
+    setRefEnabled(false);
+    setRefRules([]);
   };
 
   const canUndo = history.past.length > 0;
@@ -166,6 +172,10 @@ export default function App() {
             onSchemaChange={setSchema}
             protectedConfig={protectedConfig}
             onProtectedConfigChange={setProtectedConfig}
+            refEnabled={refEnabled}
+            onRefEnabledChange={setRefEnabled}
+            refRules={refRules}
+            onRefRulesChange={setRefRules}
             onBack={() => setStage('merge')}
             onRestart={handleRestart}
           />

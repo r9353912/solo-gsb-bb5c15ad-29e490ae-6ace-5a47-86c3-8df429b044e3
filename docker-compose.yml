@@ -4,3 +4,9 @@ services:
     ports:
       - "8080:80"
     restart: unless-stopped
+    healthcheck:
+      # 容器内 nginx 已就绪（对外仍通过宿主机 8080 访问）
+      test: ["CMD", "wget", "-qO-", "http://localhost/"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
